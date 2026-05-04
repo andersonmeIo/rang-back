@@ -1,0 +1,30 @@
+{
+  "produtos": [
+    {
+      "id": 1,
+      "nome": "Picanha na Brasa",
+      "categoria": "churrasco",
+      "descricao": "Picanha grelhada na brasa com tempero especial",
+      "preco": 79.90
+    },
+    {
+      "id": 2,
+      "nome": "Prato Feito (Arroz, Feijão e Frango)",
+      "categoria": "almoco",
+      "descricao": "Almoço completo com arroz, feijão, frango grelhado e salada",
+      "preco": 24.90
+    },
+    {
+      "id": 3,
+      "nome": "Refrigerante Lata 350ml",
+      "categoria": "bebidas",
+      "descricao": "Refrigerante gelado em lata de 350ml",
+      "preco": 5.50
+    }
+  ],
+  "categorias": [
+    "churrasco",
+    "almoco",
+    "bebidas"
+  ]
+}
