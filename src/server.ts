@@ -1,8 +1,8 @@
 import { app } from "./app.js";
+import { connectDB } from "./shared/database/connection.js";
 
-function startServer() {
-
-
+async function startServer() {
+    await connectDB();
     
     app.listen(3090, () => {
         console.log('*******************************');
