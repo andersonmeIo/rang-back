@@ -1,6 +1,6 @@
-import { success } from "zod";
 import { getDB } from "../../shared/database/connection";
 import bcrypt from "bcrypt";
+import type { ResultSetHeader } from "mysql2";
 
 type LoginUser = {
     user_email: string,
@@ -13,25 +13,27 @@ type CreateUser = {
 }
 
 export default class AuthServices {
-    async loginUser(data:LoginUser) {
-        try {
-            const db = getDB();
+    async loginUser(data: LoginUser) {
+        const db = getDB();
 
-            const [rows] = await db.execute(`SELECT * FROM Users WHERE user_email = ?`, [data.user_email]);
-            const users = rows as any[];
+        const [rows] = await db.execute(`SELECT * FROM Users WHERE user_email = ?`, [data.user_email]);
+        const users = rows as any[];
 
-            if(users.length === 0) return {message: 'Usuário não encontrado.'}
-            
-            const verifyPass = await bcrypt.compare(data.user_password, users[0].user_password);
+        if (users.length === 0) throw {
+            statusCode: 404,
+            message: 'Usuário não encontrado.'
+        }
 
-            if(!verifyPass) return {message: 'Verifique os dados de login.'}
+        const verifyPass = await bcrypt.compare(data.user_password, users[0].user_password);
 
-            return {
-                success: true,
-                message: 'Logado com sucesso.'
-            }
-        } catch (error) {
+        if (!verifyPass) throw {
+            statusCode: 401,
+            message: 'Verifique os dados de login.'
+        }
 
+        return {
+            success: true,
+            message: 'Logado com sucesso.'
         }
     }
 
@@ -40,17 +42,19 @@ export default class AuthServices {
             const db = getDB();
             const saltRounds = 10;
             const passHash = await bcrypt.hash(data.user_password, saltRounds);
-            const [result] = await db.query(`INSERT INTO Users (user_name, user_email, user_password) VALUES (?, ?, ?)`, [data.user_name, data.user_email, passHash]);
+            const [result] = await db.query<ResultSetHeader>(`INSERT INTO Users (user_name, user_email, user_password) VALUES (?, ?, ?)`, [data.user_name, data.user_email, passHash]);
 
             return {
                 success: true,
                 message: "Usuário criado com sucesso."
             }
-        } catch (error) {
-            if (error instanceof Error) {
-                return (error.message)
+        } catch (error: any) {
+            if (error.code === 'ER_DUP_ENTRY') {
+                throw {
+                    statusCode: 409,
+                    message: 'Usuário já cadastrado.'
+                };
             }
-            throw new Error("Erro desconhecido ao criar o usuário")
         }
     }
 }

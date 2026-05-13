@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import AuthServices from "./auth.services";
+import { success } from "zod";
 
 export default class AuthControllers {
     constructor(
@@ -9,14 +10,14 @@ export default class AuthControllers {
     login = async (req: Request, res: Response) => {
         try {
             const { user_email, user_password } = req.body;
-
             const postLogin = await this.authServices.loginUser({ user_email, user_password });
 
-            return res.json({
-                result: postLogin
+            return res.json(postLogin)
+        } catch (error: any) {
+            return res.status(error.statusCode || 500).json({
+                success: false,
+                message: error.message || 'Erro interno no servidor.'
             })
-        } catch (error) {
-
         }
     }
 
@@ -26,11 +27,12 @@ export default class AuthControllers {
 
             const postRegister = await this.authServices.createUser({user_name, user_email, user_password});
             
-            return res.json({
-                result: postRegister
+            return res.json(postRegister)
+        } catch (error: any) {
+            return res.status(error.statusCode || 500).json({
+                success: false,
+                message: error.message || 'Erro interno no servidor.'
             })
-        } catch (error) {
-
         }
     }
 }
