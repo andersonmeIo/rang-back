@@ -6,3 +6,4 @@ dist/
 coverage/
 .vscode/
 /src/generated/prisma
+prisma
