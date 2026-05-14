@@ -1,6 +1,14 @@
 import type { Request, Response } from "express";
 import AuthServices from "./auth.services";
-import { success } from "zod";
+import { z } from "zod";
+
+const SchemaLogin = z.object({
+    user_email: z.email(),
+    user_password: z.string().min(6)
+})
+const SchemaRegister = SchemaLogin.extend({
+    user_name: z.string()
+})
 
 export default class AuthControllers {
     constructor(
@@ -9,8 +17,10 @@ export default class AuthControllers {
 
     login = async (req: Request, res: Response) => {
         try {
-            const { user_email, user_password } = req.body;
-            const postLogin = await this.authServices.loginUser({ user_email, user_password });
+            const data = SchemaLogin.safeParse(req.body);
+            if (!data.success) return res.status(400).json({ message: 'Verifique os valores enviados...' });
+
+            const postLogin = await this.authServices.loginUser(data.data);
 
             return res.json(postLogin)
         } catch (error: any) {
@@ -23,10 +33,11 @@ export default class AuthControllers {
 
     register = async (req: Request, res: Response) => {
         try {
-            const { user_name, user_email, user_password } = req.body;
+            const data = SchemaRegister.safeParse(req.body);
+            if (!data.success) return res.status(400).json({ message: 'Verifique os valores enviados...' });
 
-            const postRegister = await this.authServices.createUser({user_name, user_email, user_password});
-            
+            const postRegister = await this.authServices.createUser(data.data);
+
             return res.json(postRegister)
         } catch (error: any) {
             return res.status(error.statusCode || 500).json({
